@@ -2,11 +2,33 @@ import requests
 import csv
 from datetime import datetime
 from multiprocessing.pool import ThreadPool as Pool
+from requests.adapters import HTTPAdapter
+from requests.packages.urllib3.util.retry import Retry
 
 
 
 itemResponse = {}
 descriptionResponse = {}
+
+
+def requests_retry_session(
+	retries=3,
+	backoff_factor=0.3,
+	status_forcelist=(500, 502, 504),
+	session=None,
+):
+	session = session or requests.Session()
+	retry = Retry(
+		total=retries,
+		read=retries,
+		connect=retries,
+		backoff_factor=backoff_factor,
+		status_forcelist=status_forcelist,
+	)
+	adapter = HTTPAdapter(max_retries=retry)
+	session.mount('http://', adapter)
+	session.mount('https://', adapter)
+	return session
 
 def saveItemsInCsv(results):
 	today = datetime.today().strftime('%Y%m%d')
@@ -29,11 +51,14 @@ def loadFile(file):
 
 def callApi(item):
 	print('Obteniendo info del item ' + item)
-	rtaItem = requests.get('https://api.mercadolibre.com/items/' + item).json()
-	rtaDescription = requests.get('https://api.mercadolibre.com/items/' + item + '/description').json()
-	itemResponse[item] = rtaItem
-	descriptionResponse[item] = rtaDescription
-	
+	try:
+		itemResponse[item] = requests_retry_session().get('https://api.mercadolibre.com/items/' + item).json()
+		descriptionResponse[item] = requests_retry_session().get('https://api.mercadolibre.com/items/' + item + '/description').json()
+	except requests.exceptions.Timeout:
+		print("Timeout!")
+	except requests.exceptions.RequestException as e:
+		print e
+
 
 
 def validatePictures(itemInfo):
@@ -57,14 +82,18 @@ def parseItems():
 	itemInfo = []
 	results = []
 	for r in itemResponse:
-		if('pictures' in itemResponse[r] and 'title' in itemResponse[r] and 'plain_text' in descriptionResponse[r]):
-			print ("key = " + str(r))
-			for picture in itemResponse[r]['pictures']:
+		try:
+			itemSingular = itemResponse[r]
+			descripcionSingular = descriptionResponse[r]
+		except KeyError, e:
+			print("Key error para el item: " + str(r) + " mensaje: " + e.message)
+		if('pictures' in itemSingular and 'title' in itemSingular and 'plain_text' in descripcionSingular):
+			for picture in itemSingular['pictures']:
 				itemInfo.append(str(picture['url']))
 			itemInfo = validatePictures(itemInfo)
-			itemInfo.insert(6,itemResponse[r]['title'])
-			itemInfo.insert(7,descriptionResponse[r]['plain_text'])
-			itemInfo.insert(8,itemResponse[r]['price'])
+			itemInfo.insert(6,itemSingular['title'])
+			itemInfo.insert(7,descripcionSingular['plain_text'])
+			itemInfo.insert(8,itemSingular['price'])
 			itemInfo.insert(9,r)
 			results.append(itemInfo)
 			itemInfo = [] 
