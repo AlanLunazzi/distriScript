@@ -46,7 +46,7 @@ def parseItems(array):
 	itemInfo = []
 	results = []
 	for r in itemResponse:
-		if('pictures' in r and 'title' in r):
+		if('pictures' in r and 'title' in r and 'plain_text' in descriptions[i]):
 			for picture in r['pictures']:
 				itemInfo.append(str(picture['url']))
 			itemInfo = validatePictures(itemInfo)
