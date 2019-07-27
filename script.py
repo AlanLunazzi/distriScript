@@ -29,10 +29,9 @@ def loadFile(file):
 	return array
 
 def callApi(item):
-	token = 'APP_USR-7278287269671778-072705-c725ef3c8148d3189dce6b43a2ba3110-135124707'
 	print('Obteniendo info del item ' + item)
-	rtaItem = requests.get('https://api.mercadolibre.com/items/' + item + '?access_token=' + token).json()
-	rtaDescription = requests.get('https://api.mercadolibre.com/items/' + item + '/description' + '?access_token=' + token).json()
+	rtaItem = requests.get('https://api.mercadolibre.com/items/' + item).json()
+	rtaDescription = requests.get('https://api.mercadolibre.com/items/' + item + '/description').json()
 	itemResponse.append(rtaItem)
 	descriptionResponse.append(rtaDescription)
 	
