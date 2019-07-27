@@ -98,8 +98,8 @@ def parseItems():
 			results.append(itemInfo)
 			itemInfo = [] 
 		else:
-			print('El item ' + array[i] + ' no fue encontrado o no contenia algun campo obligatorio.'
-			+ ' mensaje de error:' + str(r[str(array[i])]))
+			print('El item ' + str(r) + ' no fue encontrado o no contenia algun campo obligatorio.'
+			+ ' mensaje de error:' + str(itemSingular) + ' ' + str(descripcionSingular))
 		i += 1
 	return results
 
@@ -116,5 +116,5 @@ def runThreads(numberOfThreads, items):
 items = loadFile('items')
 blacklist = loadFile('blacklist')
 itemsFiltered = filterBlacklist(items, blacklist)
-runThreads(20, itemsFiltered)
+runThreads(50, itemsFiltered)
 saveItemsInCsv(parseItems())
