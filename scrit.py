@@ -10,12 +10,13 @@ respuestas = []
 descriptions = []
 text_description = []
 
-def writeResult(results):
+def saveItemsInCsv(results):
 	print ("Se escribe archivo por primera vez")
 	c.writerow(['Item', 'Titulo', 'Descripcion', 'Precio', 'Imagen 1', 'Imagen 2', 'Imagen 3', 'Imagen 4', 'Imagen 5']) 
 	for urls in results:
 		print ("Se guarda resultado del item " + urls[8])
 		c.writerow([urls[8], unicode(urls[5]).encode('utf-8'), unicode(urls[6]).encode('utf-8') , urls[7], urls[0], urls[1], urls[2], urls[3], urls[4]]) 
+	print("Archivo " + namefile + " cargado correctamente! =)")
 
 def loadItems():
 	with open("items.txt", "r") as ins:
@@ -56,5 +57,4 @@ def parseItems(array):
 
 items = loadItems()
 callApis(items) 
-writeResult(parseItems(items))
-print("Archivo " + namefile + " cargado correctamente! =)")
+saveItemsInCsv(parseItems(items))
