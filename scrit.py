@@ -13,7 +13,7 @@ def writeResult(results, initial):
 		c.writerow(['Item', 'Titulo', 'Descripcion', 'Precio', 'Imagen 1', 'Imagen 2', 'Imagen 3', 'Imagen 4', 'Imagen 5']) 
 	else:
 		for urls in results:
-			print ("Se escribe en archivo " + namefile + " resultado del item " + urls[5])
+			print ("Se guarda resultado del item " + urls[8])
 			c.writerow([urls[8], unicode(urls[5]).encode('utf-8'), unicode(urls[6]).encode('utf-8') , urls[7], urls[0], urls[1], urls[2], urls[3], urls[4]]) 
 			i += 1
 
@@ -54,7 +54,9 @@ for r in respuestas:
 		results.append(urls)
 		urls = [] 
 	else:
-		print('No se encontro el item ' + array[i] + ' mensaje de error:' + str(r))
+		print('El item ' + array[i] + ' no fue encontrado o no contenia algun campo obligatorio.'
+		+ ' mensaje de error:' + str(r) + str(descriptions[i]))
 	i += 1
 
 writeResult(results, False)
+print("Archivo " + namefile + " cargado correctamente! =)")
