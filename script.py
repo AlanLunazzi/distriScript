@@ -20,31 +20,17 @@ def saveItemsInCsv(results):
 	print("Archivo " + namefile + " cargado correctamente! =) se guardaron " +str(len(results)) + ' resultados.')
 
 def loadFile(file):
-	if(file == 'items'):
-		with open("items.txt", "r") as ins:
-	else:
-		with open("blacklist.txt", "r") as ins:
-	array = []
-	for line in ins:
-	    line = line.replace('\n', '')
-	   	line = line.replace('\r', '')
-		array.append(line)
+	with open(file + ".txt", "r") as ins:
+	    array = []
+	    for line in ins:
+	    	line = line.replace('\n', '')
+	    	line = line.replace('\r', '')
+	        array.append(line)
 	return array
-
-
-def callApis(array):
-	token = 'APP_USR-7278287269671778-072705-c725ef3c8148d3189dce6b43a2ba3110-135124707'
-	i = 1
-	for item in array:
-		print('Obteniendo info del item ' + str(i) + ' de ' + str(len(array)) + ' ' + item)
-		itemResponse.append(requests.get('https://api.mercadolibre.com/items/' + item + '?access_token=' + token).json())
-		descriptionResponse.append(requests.get('https://api.mercadolibre.com/items/' + item + '/description' + '?access_token=' + token).json())
-		i += 1
 
 def callApi(item):
 	token = 'APP_USR-7278287269671778-072705-c725ef3c8148d3189dce6b43a2ba3110-135124707'
 	print('Obteniendo info del item ' + item)
-
 	rtaItem = requests.get('https://api.mercadolibre.com/items/' + item + '?access_token=' + token).json()
 	rtaDescription = requests.get('https://api.mercadolibre.com/items/' + item + '/description' + '?access_token=' + token).json()
 	itemResponse.append(rtaItem)
@@ -58,6 +44,15 @@ def validatePictures(itemInfo):
 		itemInfo.insert (itemInfoSize, ' ')
 		itemInfoSize += 1
 	return itemInfo
+
+def filterBlacklist(items, blacklist):
+	itemsFiltered = [] 
+	for item in items:
+		if item not in blacklist:
+			itemsFiltered.append(item)
+		else:
+			print("Item " + item + " descartado por blacklist")
+	return itemsFiltered
 
 def parseItems(array):
 	i = 0
@@ -80,16 +75,18 @@ def parseItems(array):
 		i += 1
 	return results
 
-def runThreads(numberOfThreads, items, blacklist):
+def runThreads(numberOfThreads, items):
 	pool = Pool(numberOfThreads)
 	for item in items:
-		if item not in blacklist
-	    	pool.apply_async(callApi, (item,))
+		pool.apply_async(callApi, (item,))
 	pool.close()
 	pool.join()
 
 
-items = loadItems('items')
-blacklist = loadItems('blacklist')
-runThreads(20, items, blacklist)
-saveItemsInCsv(parseItems(items))
+
+
+items = loadFile('items')
+blacklist = loadFile('blacklist')
+itemsFiltered = filterBlacklist(items, blacklist)
+runThreads(20, itemsFiltered)
+saveItemsInCsv(parseItems(itemsFiltered))
