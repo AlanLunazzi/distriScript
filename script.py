@@ -9,12 +9,11 @@ def saveItemsInCsv(results):
 	today = datetime.today().strftime('%Y%m%d')
 	namefile = 'publicaciones' + today + '.csv'
 	c = csv.writer(open(namefile , "w"), delimiter=';', lineterminator = '\n')
-	print ("Se escribe archivo por primera vez")
+	print ("Se creo el archivo " + namefile)
 	c.writerow(['Codigo', 'Titulo', 'Descripcion', 'Precio', 'Foto1', 'Foto2', 'Foto3', 'Foto4', 'Foto5', 'Foto6']) 
 	for itemInfo in results:
-		print ("Se guarda resultado del item " + str(itemInfo[9]))
 		c.writerow([itemInfo[9], unicode(itemInfo[6]).encode('utf-8'), unicode(itemInfo[7]).encode('utf-8') , itemInfo[8], itemInfo[0], itemInfo[1], itemInfo[2], itemInfo[3], itemInfo[4], itemInfo[5]]) 
-	print("Archivo " + namefile + " cargado correctamente! =)")
+	print("Archivo " + namefile + " cargado correctamente! =) se guardaron " +str(len(results)) + ' resultados.')
 
 def loadItems():
 	with open("items.txt", "r") as ins:
@@ -29,7 +28,7 @@ def callApis(array):
 	token = 'APP_USR-7278287269671778-072623-c6d4136fb211d41df48c4179cb7c1cbb-135124707'
 	i = 1
 	for item in array:
-		print('Llamamos al item ' + str(i) + ' de ' + str(len(array)) + ' ' + item)
+		print('Obteniendo info del item ' + str(i) + ' de ' + str(len(array)) + ' ' + item)
 		itemResponse.append(requests.get('https://api.mercadolibre.com/items/' + item + '?access_token=' + token).json())
 		descriptionResponse.append(requests.get('https://api.mercadolibre.com/items/' + item + '/description' + '?access_token=' + token).json())
 		i += 1
@@ -46,7 +45,7 @@ def parseItems(array):
 	itemInfo = []
 	results = []
 	for r in itemResponse:
-		if('pictures' in r and 'title' in r and 'plain_text' in descriptions[i]):
+		if('pictures' in r and 'title' in r and 'plain_text' in descriptionResponse[i]):
 			for picture in r['pictures']:
 				itemInfo.append(str(picture['url']))
 			itemInfo = validatePictures(itemInfo)
