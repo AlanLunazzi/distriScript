@@ -5,9 +5,8 @@ from multiprocessing.pool import ThreadPool as Pool
 
 
 
-itemResponse = []
-descriptionResponse = []
-
+itemResponse = {}
+descriptionResponse = {}
 
 def saveItemsInCsv(results):
 	today = datetime.today().strftime('%Y%m%d')
@@ -32,8 +31,8 @@ def callApi(item):
 	print('Obteniendo info del item ' + item)
 	rtaItem = requests.get('https://api.mercadolibre.com/items/' + item).json()
 	rtaDescription = requests.get('https://api.mercadolibre.com/items/' + item + '/description').json()
-	itemResponse.append(rtaItem)
-	descriptionResponse.append(rtaDescription)
+	itemResponse[item] = rtaItem
+	descriptionResponse[item] = rtaDescription
 	
 
 
@@ -53,24 +52,25 @@ def filterBlacklist(items, blacklist):
 			print("Item " + item + " descartado por blacklist")
 	return itemsFiltered
 
-def parseItems(array):
+def parseItems():
 	i = 0
 	itemInfo = []
 	results = []
 	for r in itemResponse:
-		if('pictures' in r and 'title' in r and 'plain_text' in descriptionResponse[i]):
-			for picture in r['pictures']:
+		if('pictures' in itemResponse[r] and 'title' in itemResponse[r] and 'plain_text' in descriptionResponse[r]):
+			print ("key = " + str(r))
+			for picture in itemResponse[r]['pictures']:
 				itemInfo.append(str(picture['url']))
 			itemInfo = validatePictures(itemInfo)
-			itemInfo.insert(6,r['title'])
-			itemInfo.insert(7,descriptionResponse[i]['plain_text'])
-			itemInfo.insert(8,r['price'])
-			itemInfo.insert(9,array[i])
+			itemInfo.insert(6,itemResponse[r]['title'])
+			itemInfo.insert(7,descriptionResponse[r]['plain_text'])
+			itemInfo.insert(8,itemResponse[r]['price'])
+			itemInfo.insert(9,r)
 			results.append(itemInfo)
 			itemInfo = [] 
 		else:
 			print('El item ' + array[i] + ' no fue encontrado o no contenia algun campo obligatorio.'
-			+ ' mensaje de error:' + str(r) + str(descriptionResponse[i]))
+			+ ' mensaje de error:' + str(r[str(array[i])]))
 		i += 1
 	return results
 
@@ -88,4 +88,4 @@ items = loadFile('items')
 blacklist = loadFile('blacklist')
 itemsFiltered = filterBlacklist(items, blacklist)
 runThreads(20, itemsFiltered)
-saveItemsInCsv(parseItems(itemsFiltered))
+saveItemsInCsv(parseItems())
